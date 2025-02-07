@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package sso;
+
+option go_package = "github.com/LavaJover/storage-sso-service/sso-service/proto/gen;ssopb";
+
+service AuthService{
+    rpc Register (RegisterRequest) returns (AuthResponse);
+    rpc Login (LoginRequest) returns (AuthResponse);
+    rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+    rpc RefreshToken (RefreshTokenRequest) returns (AuthResponse);
+}
+
+// Register
+message RegisterRequest{
+    string email = 1;
+    string password = 2;
+}
+
+// Login
+message LoginRequest{
+    string email = 1;
+    string password = 2;
+}
+
+// Auth response
+message AuthResponse{
+    string access_token = 1;
+    string refresh_token = 2;
+    uint64 user_id = 3;
+}
+
+// Process access-token validation
+message ValidateTokenRequest{
+    string access_token = 1;
+}
+
+message ValidateTokenResponse{
+    uint64 user_id = 1;
+}
+
+// Process refresh token
+message RefreshTokenRequest{
+    string refresh_token = 1;
+}
