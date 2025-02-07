@@ -10,11 +10,16 @@ import (
 type SSOConfig struct{
 	Env string `yaml:"env" env-required:"true"`
 	GRPCServer `yaml:"grpc_server"`
+	SSODB	   `yaml:"sso_db"`
 }
 
 type GRPCServer struct{
 	Host string `yaml:"host"`
 	Port string `yaml:"port"`
+}
+
+type SSODB struct{
+	Dsn string `yaml:"dsn" env-required:"true"`
 }
 
 func MustLoad() *SSOConfig{
