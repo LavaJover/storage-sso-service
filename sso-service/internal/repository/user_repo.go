@@ -9,6 +9,13 @@ type UserRepo struct{
 	*gorm.DB
 }
 
-func (repo *UserRepo) CreateUser (user *models.User) error{
+// Insert new user instance to DB
+func (repo *UserRepo) CreateUser (newUser *models.User) error{
+	result := repo.DB.Create(&newUser)
 
+	if result.Error != nil{
+		return result.Error
+	}
+
+	return nil
 }
