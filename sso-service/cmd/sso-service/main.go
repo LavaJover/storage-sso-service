@@ -24,7 +24,7 @@ func main(){
 
 	// Init repos layer
 	userRepo := repo.UserRepo{
-		DB: db
+		DB: db,
 	}
 
 	// Init service layer
