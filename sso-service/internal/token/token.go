@@ -18,7 +18,7 @@ func GenerateTokens(userID uint64) (string, string, error) {
         "exp":     time.Now().Add(cfg.AccessToken.TimeDuration).Unix(),
     }
     accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-    signedAccessToken, err := accessToken.SignedString(cfg.AccessToken.Secret)
+    signedAccessToken, err := accessToken.SignedString([]byte(cfg.AccessToken.Secret))
     if err != nil {
         return "", "", err
     }
@@ -29,7 +29,7 @@ func GenerateTokens(userID uint64) (string, string, error) {
         "exp":     time.Now().Add(cfg.RefreshToken.TimeDuration).Unix(),
     }
     refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-    signedRefreshToken, err := refreshToken.SignedString(cfg.RefreshToken.Secret)
+    signedRefreshToken, err := refreshToken.SignedString([]byte(cfg.RefreshToken.Secret))
     if err != nil {
         return "", "", err
     }
