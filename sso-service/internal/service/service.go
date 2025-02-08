@@ -1,4 +1,4 @@
-package servie
+package service
 
 import (
 	repo "github.com/LavaJover/storage-sso-service/sso-service/internal/repository"

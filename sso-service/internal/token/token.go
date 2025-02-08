@@ -1,34 +1,35 @@
-package token
+package tokens
 
 import (
-    "time"
+	"time"
 
-    "github.com/golang-jwt/jwt/v5"
+	"github.com/LavaJover/storage-sso-service/sso-service/internal/config"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-var accessSecret = []byte("my_super_secret_key_for_access")
-var refreshSecret = []byte("my_super_secret_key_for_refresh")
+func GenerateTokens(userID uint64) (string, string, error) {
 
-func generateTokens(userID uint64) (string, string, error) {
+	// Loading config file
+	cfg := config.MustLoad()
 
-	// Creating access token (15 mins duration)
+	// Creating access token
     accessTokenClaims := jwt.MapClaims{
         "user_id": userID,
-        "exp":     time.Now().Add(15 * time.Minute).Unix(),
+        "exp":     time.Now().Add(cfg.AccessToken.TimeDuration).Unix(),
     }
     accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)
-    signedAccessToken, err := accessToken.SignedString(accessSecret)
+    signedAccessToken, err := accessToken.SignedString(cfg.AccessToken.Secret)
     if err != nil {
         return "", "", err
     }
 
-    // Creating refresh token (7 days duration)
+    // Creating refresh token
     refreshTokenClaims := jwt.MapClaims{
         "user_id": userID,
-        "exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
+        "exp":     time.Now().Add(cfg.RefreshToken.TimeDuration).Unix(),
     }
     refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-    signedRefreshToken, err := refreshToken.SignedString(refreshSecret)
+    signedRefreshToken, err := refreshToken.SignedString(cfg.RefreshToken.Secret)
     if err != nil {
         return "", "", err
     }

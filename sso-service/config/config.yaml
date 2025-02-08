@@ -4,3 +4,9 @@ grpc_server:
   port: "50052"
 sso_db:
   dsn: "host=localhost user=postgres password=admin dbname=storagemaster port=5432 sslmode=disable"
+access_token:
+  secret: "access-secret-word"
+  time_duration: 15m
+refresh_token:
+  secret: "refresh-secret-word"
+  time_duration: 140h

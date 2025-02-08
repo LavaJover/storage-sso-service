@@ -13,7 +13,7 @@ type UserRepo struct{
 
 // Insert new user instance to DB
 func (repo *UserRepo) CreateUser (newUser *models.User) error{
-	result := repo.DB.Create(&newUser)
+	result := repo.DB.Create(newUser)
 
 	if result.Error != nil{
 		return result.Error
