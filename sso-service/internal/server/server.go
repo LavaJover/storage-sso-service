@@ -30,7 +30,7 @@ Errors produced:
 func (server *SSOServer) Register(ctx context.Context, r *ssopb.RegisterRequest) (*ssopb.AuthResponse, error){
 
 	// Password encryption
-	hashedPassword, err := password.HashPassword(r.Password)
+	hashedPassword, err := password.HashPassword(r.GetPassword())
 
 	if err != nil{
 		slog.Error("failed to hash password", "msg", err.Error())
@@ -39,7 +39,7 @@ func (server *SSOServer) Register(ctx context.Context, r *ssopb.RegisterRequest)
 
 	// Inserting user instance to db
 	user := models.User{
-		Email: r.Email,
+		Email: r.GetEmail(),
 		Password: hashedPassword,
 	}
 
@@ -77,7 +77,7 @@ Errors produced:
 func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*ssopb.AuthResponse, error){
 
 	// Extracting credentials
-	email, rawPassword := r.Email, r.Password
+	email, rawPassword := r.GetEmail(), r.GetPassword()
 
 	// Searching for user
 	user, err := server.SSOService.GetUserByEmail(email)
@@ -96,7 +96,7 @@ func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*sso
 	// Processing successful log in
 	slog.Info(fmt.Sprintf("user %s logged in", email))
 
-	accessToken, refreshToken , err:= tokens.GenerateTokens(uint64(user.ID))
+	accessToken, refreshToken , err := tokens.GenerateTokens(uint64(user.ID))
 
 	if err != nil{
 		slog.Error(fmt.Sprintf("failed to generate tokens for user '%s'", email), "msg", err.Error())
@@ -111,8 +111,30 @@ func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*sso
 
 }
 
+/*
+
+Summary: Handler to validate incoming access token
+Errors produced:
+
+
+*/
 func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTokenRequest) (*ssopb.ValidateTokenResponse, error){
-	
+
+	// Extract access token
+	accessToken := r.GetAccessToken()
+
+	// Validating token on service layer
+	userID, err := server.SSOService.ValidateJWT(accessToken)
+
+	if err != nil{
+		slog.Error("JWT validation failed", "msg", err.Error())
+		return nil, fmt.Errorf("JWT is not valid")
+	}
+
+	return &ssopb.ValidateTokenResponse{
+		UserId: userID,
+	}, nil
+
 }
 
 // func (server *SSOServer) RefreshToken(ctx context.Context, r *ssopb.RefreshTokenRequest) (*ssopb.AuthResponse, error){

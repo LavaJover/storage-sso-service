@@ -2,9 +2,15 @@ package tokens
 
 import (
 	"time"
+	"errors"
 
 	"github.com/LavaJover/storage-sso-service/sso-service/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+)
+
+var (
+	accessTokenClaims jwt.MapClaims
+	secretAccessKey = config.MustLoad().AccessToken.Secret
 )
 
 func GenerateTokens(userID uint64) (string, string, error) {
@@ -13,7 +19,7 @@ func GenerateTokens(userID uint64) (string, string, error) {
 	cfg := config.MustLoad()
 
 	// Creating access token
-    accessTokenClaims := jwt.MapClaims{
+    accessTokenClaims = jwt.MapClaims{
         "user_id": userID,
         "exp":     time.Now().Add(cfg.AccessToken.TimeDuration).Unix(),
     }
@@ -35,4 +41,30 @@ func GenerateTokens(userID uint64) (string, string, error) {
     }
 
     return signedAccessToken, signedRefreshToken, nil
+}
+
+type Claims struct{
+	UserID uint64 `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func ParseJWT(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		// Validating JWT signing algo
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("wrong JWT signing algo")
+		}
+		return []byte(secretAccessKey), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Validating Claims
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("token is invalid")
 }
