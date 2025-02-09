@@ -115,7 +115,7 @@ func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*sso
 
 Summary: Handler to validate incoming access token
 Errors produced:
-
+	- JWT is not valid
 
 */
 func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTokenRequest) (*ssopb.ValidateTokenResponse, error){

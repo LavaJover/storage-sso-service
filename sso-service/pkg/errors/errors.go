@@ -28,3 +28,12 @@ type EmailAlreadyTakenError struct{
 func (e *EmailAlreadyTakenError) Error() string {
 	return fmt.Sprintf("Email '%s' is already taken", e.Email)
 }
+
+// Processing invalid JWT
+type JWTNotValidError struct{
+	Token string
+}
+
+func (e *JWTNotValidError) Error() string {
+	return fmt.Sprintf("JWT is invalid: %s", e.Token)
+}
