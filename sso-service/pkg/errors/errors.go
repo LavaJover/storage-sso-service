@@ -19,3 +19,12 @@ type WrongPasswordError struct{
 func (e *WrongPasswordError) Error() string {
 	return fmt.Sprintf("Wrong password for user '%s'", e.Email)
 }
+
+// Processing already registered email
+type EmailAlreadyTakenError struct{
+	Email string
+}
+
+func (e *EmailAlreadyTakenError) Error() string {
+	return fmt.Sprintf("Email '%s' is already taken", e.Email)
+}
