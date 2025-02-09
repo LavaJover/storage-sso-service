@@ -115,7 +115,7 @@ func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*sso
 
 Summary: Handler to validate incoming access token
 Errors produced:
-	- JWT is not valid
+	- JWTNotValidError
 
 */
 func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTokenRequest) (*ssopb.ValidateTokenResponse, error){
@@ -128,7 +128,7 @@ func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTok
 
 	if err != nil{
 		slog.Error("JWT validation failed", "msg", err.Error())
-		return nil, fmt.Errorf("JWT is not valid")
+		return nil, &errors.JWTNotValidError{Token: accessToken}
 	}
 
 	return &ssopb.ValidateTokenResponse{
