@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Initialize database and make neccessary migrations
 func InitDB(dsn string) *gorm.DB{
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
@@ -15,7 +16,11 @@ func InitDB(dsn string) *gorm.DB{
 		log.Fatalf("failed to init db: %v\n", err)
 	}
 
-	db.AutoMigrate(&models.User{})
+	err = db.AutoMigrate(&models.User{})
+
+	if err != nil{
+		log.Fatal("failed to migrate User model", "msg", err.Error())
+	}
 
 	return db
 }
