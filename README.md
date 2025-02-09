@@ -30,6 +30,6 @@ go mod tidy
 ### Setup environment and run
 ```sh
 export SSO_CONFIG_PATH="path/to/config/file"
-cd storage-sso-service/sso-service
+cd ./sso-service
 go run cmd/sso-service/main.go
 ```
