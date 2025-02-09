@@ -72,7 +72,7 @@ Summary: Handler to process user log in to the system
 Errors produced:
 	- EmailNotFoundError
 	- WrongPasswordError
-
+	- Failed to generate tokens
 */
 func (server *SSOServer) Login(ctx context.Context, r *ssopb.LoginRequest) (*ssopb.AuthResponse, error){
 
@@ -124,10 +124,10 @@ func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTok
 	accessToken := r.GetAccessToken()
 
 	// Validating token on service layer
-	userID, err := server.SSOService.ValidateJWT(accessToken)
+	userID, err := server.SSOService.ValidateAccessJWT(accessToken)
 
 	if err != nil{
-		slog.Error("JWT validation failed", "msg", err.Error())
+		slog.Error("access JWT validation failed", "msg", err.Error())
 		return nil, &errors.JWTNotValidError{Token: accessToken}
 	}
 
@@ -137,6 +137,38 @@ func (server *SSOServer) ValidateToken(ctx context.Context, r *ssopb.ValidateTok
 
 }
 
-// func (server *SSOServer) RefreshToken(ctx context.Context, r *ssopb.RefreshTokenRequest) (*ssopb.AuthResponse, error){
+/*
 
-// }
+Summary: Handler to process request with refresh token, validate it and response with updated acceess token
+Errors produced:
+	- JWTNotValidError
+	- Failed to generate tokens
+*/
+
+func (server *SSOServer) RefreshToken(ctx context.Context, r *ssopb.RefreshTokenRequest) (*ssopb.AuthResponse, error){
+
+	// Extract refresh token
+	refreshToken := r.GetRefreshToken()
+
+	// Validating refresh token on service layer
+	userID, err := server.SSOService.ValidateRefreshJWT(refreshToken)
+
+	if err != nil{
+		slog.Error("refresh JWT validation failed", "msg", err.Error())
+		return nil, &errors.JWTNotValidError{Token: refreshToken}
+	}
+
+	// If validation is positive then generate fresh tokens
+	newAccessToken, newRefreshToken, err := tokens.GenerateTokens(userID)
+
+	if err != nil{
+		slog.Error("failed to generate tokens", "msg", err.Error())
+		return nil, err
+	}
+
+	return &ssopb.AuthResponse{
+		AccessToken: newAccessToken,
+		RefreshToken: newRefreshToken,
+		UserId: userID,
+	}, nil
+}

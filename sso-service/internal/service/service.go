@@ -26,13 +26,32 @@ func (service *SSOService) GetUserByEmail (email string) (*models.User, error){
 	Otherwise - error with description 
 */
 
-func (service *SSOService) ValidateJWT (tokenString string) (uint64, error) {
+func (service *SSOService) ValidateAccessJWT (tokenString string) (uint64, error) {
 	
 	if tokenString == ""{
 		return 0, fmt.Errorf("token is empty")
 	}
 
-	claims, err := tokens.ParseJWT(tokenString)
+	claims, err := tokens.ParseAccessJWT(tokenString)
+	if err != nil {
+		return 0, fmt.Errorf("token validation error: %v", err)
+	}
+
+	// Validating token exp time
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		return 0, fmt.Errorf("token has expired")
+	}
+
+	return claims.UserID, nil
+
+}
+
+func (service *SSOService) ValidateRefreshJWT (tokenString string) (uint64, error) {
+	if tokenString == ""{
+		return 0, fmt.Errorf("token is empty")
+	}
+
+	claims, err := tokens.ParseRefreshJWT(tokenString)
 	if err != nil {
 		return 0, fmt.Errorf("token validation error: %v", err)
 	}
