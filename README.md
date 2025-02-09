@@ -18,3 +18,9 @@ This Single Sign-On service was developed for safe and rapid authentication and 
 ---
 
 ## Installation
+```sh
+git clone https://github.com/LavaJover/storage-sso-service.git
+export SSO_CONFIG_PATH="path/to/config/file"
+cd storage-sso-service/sso-service
+go run cmd/sso-service/main.go
+```
