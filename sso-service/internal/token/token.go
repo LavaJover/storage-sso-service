@@ -10,7 +10,8 @@ import (
 
 var (
 	accessTokenClaims jwt.MapClaims
-	secretAccessKey = config.MustLoad().AccessToken.Secret
+	cfg = config.MustLoad()
+	secretAccessKey, secretRefreshKey = cfg.AccessToken.Secret, cfg.RefreshToken.Secret
 )
 
 func GenerateTokens(userID uint64) (string, string, error) {
@@ -48,13 +49,34 @@ type Claims struct{
 	jwt.RegisteredClaims
 }
 
-func ParseJWT(tokenString string) (*Claims, error) {
+func ParseAccessJWT(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// Validating JWT signing algo
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("wrong JWT signing algo")
 		}
 		return []byte(secretAccessKey), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Validating Claims
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("token is invalid")
+}
+
+func ParseRefreshJWT(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		// Validating JWT signing algo
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("wrong JWT signing algo")
+		}
+		return []byte(secretRefreshKey), nil
 	})
 
 	if err != nil {
